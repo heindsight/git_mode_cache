@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+MODEFILE=${MODEFILE:-".git-mode-cache"}
+
+git-store-modes save -f "$MODEFILE"
+
+if [[ $? -ne 0 ]]; then
+    exit 1
+fi
+
+if [[ ! -e "$MODEFILE" ]]; then
+    echo "File not found: $MODEFILE" >&2
+    exit 1
+fi
+
+git add "$MODEFILE"

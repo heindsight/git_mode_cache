@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+MODEFILE=${MODEFILE:-".git-mode-cache"}
+
+OLD=$1
+NEW=$2
+
+if [[ "$OLD" != "$NEW" ]]; then
+    git-store-modes restore -f "$MODEFILE";
+fi

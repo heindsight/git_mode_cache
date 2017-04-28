@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+
+MODEFILE=".git-mode-cache"
+USAGE="Usage:
+  ${0##*/} save OPTIONS
+or  ${0##*/} restore OPTIONS
+
+Save or restore permissions of files in a git repository.
+
+Options:
+  -f file:  Save permissions to (or restore from) file (default: $MODEFILE)
+  -h:     Show this help and exit.
+"
+
+function go_worktree_root() {
+  local CDUP=$(git rev-parse --show-cdup)
+  local ERR=$?
+
+  if [[ $ERR -ne 0 ]]; then
+    exit $ERR;
+  fi
+
+  if [[ "$CDUP" ]]; then
+    pushd "$CDUP" &> /dev/null \
+      && trap 'popd &> /dev/null' EXIT \
+      || exit $?
+  fi
+}
+
+function files_ancestors() {
+  while [[ $# -gt 0 ]]; do
+    FPATH=$1
+    while [[ "$FPATH" && "$FPATH" != [./] ]]; do
+      printf "%s\0" "$FPATH"
+      FPATH=$(dirname "$FPATH")
+    done
+    shift
+  done
+}
+
+export -f files_ancestors
+
+function list_files_and_dirs() {
+  git ls-files -cz --full-name \
+    | xargs -0 bash -c 'files_ancestors "$@"' - \
+    | sort -zu
+}
+
+function get_modes() {
+  local -a STATOPTS
+
+  stat --printf '%a' . &> /dev/null
+  if [[ $? -ne 0 ]]; then
+    STATOPTS=(-f '%p\t%N\0')
+  else
+    STATOPTS=(--printf '%a\t%n\0')
+  fi
+
+  list_files_and_dirs | xargs -0 stat "${STATOPTS[@]}"
+}
+
+function restore_modes() {
+  awk -F '\t' -v RS='\0' '{
+    MODE = $1;
+    FNAME = $0;
+    sub(/^[[:digit:]]+\t/, "", FNAME);
+    cmd = sprintf("chmod  %s \"%s\"", MODE, FNAME);
+    system(cmd);
+  }'
+}
+
+if [[ "$1" = "save" ]]; then
+  MODE="SAVE"
+elif [[ "$1" = "restore" ]]; then
+  MODE="RESTORE"
+else
+  echo "$USAGE" >&2
+  exit 1
+fi
+
+shift
+set -o nounset
+
+while getopts 'f:h' OPT; do
+  case "$OPT" in
+    'f')
+      MODEFILE=$OPTARG
+      ;;
+    'h')
+      echo "$USAGE"
+      exit
+      ;;
+    *)
+      echo "$USAGE" >&2
+      exit 1
+      ;;
+  esac
+done
+
+shift $((OPTIND-1))
+
+if [[ $# -gt 0 ]]; then
+  echo "Unexpected arguments: $@" >&2
+  echo "$USAGE" >&2
+  exit 1
+fi
+
+go_worktree_root
+
+case "$MODE" in
+  "SAVE")
+    get_modes > "$MODEFILE"
+    ;;
+
+  "RESTORE")
+    restore_modes < "$MODEFILE"
+    ;;
+esac
