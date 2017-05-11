@@ -49,8 +49,7 @@ function list_files_and_dirs() {
 function get_modes() {
   local -a STATOPTS
 
-  stat --printf '%a' . &> /dev/null
-  if [[ $? -ne 0 ]]; then
+  if stat --printf '' . &> /dev/null; then
     STATOPTS=(-f '%p\t%N\0')
   else
     STATOPTS=(--printf '%a\t%n\0')
