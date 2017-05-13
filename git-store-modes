@@ -50,9 +50,9 @@ function get_modes() {
   local -a STATOPTS
 
   if stat --printf '' . &> /dev/null; then
-    STATOPTS=(-f '%p\t%N\0')
-  else
     STATOPTS=(--printf '%a\t%n\0')
+  else
+    STATOPTS=(-f '%p\t%N\0')
   fi
 
   list_files_and_dirs | xargs -0 stat "${STATOPTS[@]}"
