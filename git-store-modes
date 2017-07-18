@@ -47,15 +47,16 @@ function list_files_and_dirs() {
 }
 
 function get_modes() {
-  local -a STATOPTS
+  local -a STATOPTS=(--printf '%a\t%n\0')
+  local STAT
 
   if stat --printf '' . &> /dev/null; then
-    STATOPTS=(--printf '%a\t%n\0')
+    STAT=stat
   else
-    STATOPTS=(-f '%p\t%N\0')
+    STAT=gstat
   fi
 
-  list_files_and_dirs | xargs -0 stat "${STATOPTS[@]}"
+  list_files_and_dirs | xargs -0 "$STAT" "${STATOPTS[@]}"
 }
 
 function restore_modes() {
