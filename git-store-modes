@@ -28,21 +28,19 @@ function go_worktree_root() {
 }
 
 function files_ancestors() {
-  while [[ $# -gt 0 ]]; do
-    FPATH=$1
+  local FPATH
+
+  while read -r -d '' FPATH; do
     while [[ "$FPATH" && "$FPATH" != [./] ]]; do
       printf "%s\0" "$FPATH"
       FPATH=$(dirname "$FPATH")
     done
-    shift
   done
 }
 
-export -f files_ancestors
-
 function list_files_and_dirs() {
   git ls-files -cz --full-name \
-    | xargs -0 bash -c 'files_ancestors "$@"' - \
+    | files_ancestors \
     | sort -zu
 }
 
