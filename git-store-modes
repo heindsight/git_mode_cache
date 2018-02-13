@@ -2,14 +2,14 @@
 
 MODEFILE=".git-mode-cache"
 USAGE="Usage:
-  ${0##*/} save OPTIONS
+    ${0##*/} save OPTIONS
 or  ${0##*/} restore OPTIONS
 
 Save or restore permissions of files in a git repository.
 
 Options:
   -f file:  Save permissions to (or restore from) file (default: $MODEFILE)
-  -h:     Show this help and exit.
+  -h:       Show this help and exit.
 "
 
 function go_worktree_root() {
