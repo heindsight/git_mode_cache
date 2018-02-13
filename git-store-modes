@@ -70,7 +70,7 @@ function restore_modes() {
   local FILENAME
   local ORIG_IFS="$IFS"
 
-  IFS='\t'
+  printf -v IFS '\t'
 
   while read -r -d '' MODE FILENAME; do
     if [[ ! -L "$FILENAME" ]]; then
