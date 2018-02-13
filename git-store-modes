@@ -38,6 +38,16 @@ function files_ancestors() {
   done
 }
 
+function filter_symlinks() {
+  local FILENAME
+
+  while read -r -d '' FILENAME; do
+    if [[ ! -L "$FILENAME" ]]; then
+      printf "%s\0" "$FILENAME"
+    fi
+  done
+}
+
 function get_modes() {
   local -a STATOPTS=(--printf '%a\t%n\0')
   local STAT
@@ -50,6 +60,7 @@ function get_modes() {
 
   git ls-files -cz --full-name \
     | files_ancestors \
+    | filter_symlinks \
     | sort -zu \
     | xargs -0 "$STAT" "${STATOPTS[@]}"
 }
@@ -62,7 +73,9 @@ function restore_modes() {
   IFS='\t'
 
   while read -r -d '' MODE FILENAME; do
-    chmod "$MODE" "$FILENAME"
+    if [[ ! -L "$FILENAME" ]]; then
+      chmod "$MODE" "$FILENAME"
+    fi
   done
 
   IFS="$ORIG_IFS"
