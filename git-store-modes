@@ -55,13 +55,17 @@ function get_modes() {
 }
 
 function restore_modes() {
-  awk -F '\t' -v RS='\0' '{
-    MODE = $1;
-    FNAME = $0;
-    sub(/^[[:digit:]]+\t/, "", FNAME);
-    cmd = sprintf("chmod  %s \"%s\"", MODE, FNAME);
-    system(cmd);
-  }'
+  local MODE
+  local FILENAME
+  local ORIG_IFS="$IFS"
+
+  IFS='\t'
+
+  while read -r -d '' MODE FILENAME; do
+    chmod "$MODE" "$FILENAME"
+  done
+
+  IFS="$ORIG_IFS"
 }
 
 if [[ "$1" = "save" ]]; then
