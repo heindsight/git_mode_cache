@@ -8,7 +8,7 @@ or  ${0##*/} restore OPTIONS
 Save or restore permissions of files in a git repository.
 
 Options:
-  -f file:  Save permissions to (or restore from) file (default: $MODEFILE)
+  -f file:  Save permissions to (or restore from) file (default: ${MODEFILE})
   -h:       Show this help and exit.
 "
 
@@ -16,12 +16,12 @@ function go_worktree_root() {
   local CDUP=$(git rev-parse --show-cdup)
   local ERR=$?
 
-  if [[ $ERR -ne 0 ]]; then
-    exit $ERR;
+  if [[ ${ERR} -ne 0 ]]; then
+    exit ${ERR};
   fi
 
-  if [[ "$CDUP" ]]; then
-    pushd "$CDUP" &> /dev/null \
+  if [[ "${CDUP}" ]]; then
+    pushd "${CDUP}" &> /dev/null \
       && trap 'popd &> /dev/null' EXIT \
       || exit $?
   fi
@@ -31,9 +31,9 @@ function files_ancestors() {
   local FPATH
 
   while read -r -d '' FPATH; do
-    while [[ "$FPATH" && "$FPATH" != [./] ]]; do
-      printf "%s\0" "$FPATH"
-      FPATH=$(dirname "$FPATH")
+    while [[ "${FPATH}" && "${FPATH}" != [./] ]]; do
+      printf "%s\0" "${FPATH}"
+      FPATH=$(dirname "${FPATH}")
     done
   done
 }
@@ -42,8 +42,8 @@ function filter_symlinks() {
   local FILENAME
 
   while read -r -d '' FILENAME; do
-    if [[ ! -L "$FILENAME" ]]; then
-      printf "%s\0" "$FILENAME"
+    if [[ ! -L "${FILENAME}" ]]; then
+      printf "%s\0" "${FILENAME}"
     fi
   done
 }
@@ -62,23 +62,23 @@ function get_modes() {
     | files_ancestors \
     | filter_symlinks \
     | sort -zu \
-    | xargs -0 "$STAT" "${STATOPTS[@]}"
+    | xargs -0 "${STAT}" "${STATOPTS[@]}"
 }
 
 function restore_modes() {
   local MODE
   local FILENAME
-  local ORIG_IFS="$IFS"
+  local ORIG_IFS="${IFS}"
 
   printf -v IFS '\t'
 
   while read -r -d '' MODE FILENAME; do
-    if [[ ! -L "$FILENAME" ]]; then
-      chmod "$MODE" "$FILENAME"
+    if [[ ! -L "${FILENAME}" ]]; then
+      chmod "${MODE}" "${FILENAME}"
     fi
   done
 
-  IFS="$ORIG_IFS"
+  IFS="${ORIG_IFS}"
 }
 
 if [[ "$1" = "save" ]]; then
@@ -86,7 +86,7 @@ if [[ "$1" = "save" ]]; then
 elif [[ "$1" = "restore" ]]; then
   MODE="RESTORE"
 else
-  echo "$USAGE" >&2
+  echo "${USAGE}" >&2
   exit 1
 fi
 
@@ -94,16 +94,16 @@ shift
 set -o nounset
 
 while getopts 'f:h' OPT; do
-  case "$OPT" in
+  case "${OPT}" in
     'f')
-      MODEFILE=$OPTARG
+      MODEFILE=${OPTARG}
       ;;
     'h')
-      echo "$USAGE"
+      echo "${USAGE}"
       exit
       ;;
     *)
-      echo "$USAGE" >&2
+      echo "${USAGE}" >&2
       exit 1
       ;;
   esac
@@ -113,18 +113,18 @@ shift $((OPTIND-1))
 
 if [[ $# -gt 0 ]]; then
   echo "Unexpected arguments: $@" >&2
-  echo "$USAGE" >&2
+  echo "${USAGE}" >&2
   exit 1
 fi
 
 go_worktree_root
 
-case "$MODE" in
+case "${MODE}" in
   "SAVE")
-    get_modes > "$MODEFILE"
+    get_modes > "${MODEFILE}"
     ;;
 
   "RESTORE")
-    restore_modes < "$MODEFILE"
+    restore_modes < "${MODEFILE}"
     ;;
 esac
