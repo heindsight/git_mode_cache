@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+set -o errexit
+set -o nounset
+set -o pipefail
+
 MODEFILE=".git-mode-cache"
 USAGE="Usage:
     ${0##*/} save OPTIONS
