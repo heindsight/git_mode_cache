@@ -38,12 +38,6 @@ function files_ancestors() {
   done
 }
 
-function list_files_and_dirs() {
-  git ls-files -cz --full-name \
-    | files_ancestors \
-    | sort -zu
-}
-
 function get_modes() {
   local -a STATOPTS=(--printf '%a\t%n\0')
   local STAT
@@ -54,7 +48,10 @@ function get_modes() {
     STAT=gstat
   fi
 
-  list_files_and_dirs | xargs -0 "$STAT" "${STATOPTS[@]}"
+  git ls-files -cz --full-name \
+    | files_ancestors \
+    | sort -zu \
+    | xargs -0 "$STAT" "${STATOPTS[@]}"
 }
 
 function restore_modes() {
