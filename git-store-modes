@@ -4,7 +4,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-MODEFILE=".git-mode-cache"
+DFLT_MODEFILE=".git-mode-cache"
 USAGE="Usage:
     ${0##*/} save OPTIONS
 or  ${0##*/} restore OPTIONS
@@ -12,7 +12,7 @@ or  ${0##*/} restore OPTIONS
 Save or restore permissions of files in a git repository.
 
 Options:
-  -f file:  Save permissions to (or restore from) file (default: ${MODEFILE})
+  -f file:  Save permissions to (or load from) file (default: ${DFLT_MODEFILE})
   -h:       Show this help and exit.
 "
 
@@ -80,50 +80,63 @@ function restore_modes() {
   IFS="${ORIG_IFS}"
 }
 
-if [[ "$1" = "save" ]]; then
-  MODE="SAVE"
-elif [[ "$1" = "restore" ]]; then
-  MODE="RESTORE"
-else
-  echo "${USAGE}" >&2
-  exit 1
-fi
+function process_args() {
+  local OPTIND=1
+  local -n CMD=$1
+  local -n FNAME=$2
 
-shift
-set -o nounset
+  CMD=${3^^*}
+  FNAME="${DFLT_MODEFILE}"
 
-while getopts 'f:h' OPT; do
-  case "${OPT}" in
-    'f')
-      MODEFILE=${OPTARG}
+  shift 3
+
+  while getopts 'f:h' OPT; do
+    case "${OPT}" in
+      'f')
+        MODEFILE=${OPTARG}
+        ;;
+      'h')
+        echo "${USAGE}"
+        exit
+        ;;
+      *)
+        echo "${USAGE}" >&2
+        exit 1
+        ;;
+    esac
+  done
+
+  shift $((OPTIND-1))
+
+  if [[ $# -gt 0 ]]; then
+    echo "Unexpected arguments: $@" >&2
+    echo "${USAGE}" >&2
+    exit 1
+  fi
+}
+
+function main() {
+  local COMMAND
+  local MODEFILE
+
+  process_args COMMAND MODEFILE "$@"
+
+  go_worktree_root
+
+  case "${COMMAND}" in
+    "SAVE")
+      get_modes > "${MODEFILE}"
       ;;
-    'h')
-      echo "${USAGE}"
-      exit
+
+    "RESTORE")
+      restore_modes < "${MODEFILE}"
       ;;
+
     *)
       echo "${USAGE}" >&2
       exit 1
       ;;
   esac
-done
+}
 
-shift $((OPTIND-1))
-
-if [[ $# -gt 0 ]]; then
-  echo "Unexpected arguments: $@" >&2
-  echo "${USAGE}" >&2
-  exit 1
-fi
-
-go_worktree_root
-
-case "${MODE}" in
-  "SAVE")
-    get_modes > "${MODEFILE}"
-    ;;
-
-  "RESTORE")
-    restore_modes < "${MODEFILE}"
-    ;;
-esac
+main "$@"
