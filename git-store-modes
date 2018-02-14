@@ -13,6 +13,8 @@ Save or restore permissions of files in a git repository.
 
 Options:
   -f file:  Save permissions to (or load from) file (default: ${DFLT_MODEFILE})
+            Note: if a relative path is supplied, it is interpreted relative to
+            the repository root.
   -h:       Show this help and exit.
 "
 
