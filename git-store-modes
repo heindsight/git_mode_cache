@@ -4,7 +4,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-DFLT_MODEFILE=".git-mode-cache"
+DFLT_MODEFILE='.git-mode-cache'
 USAGE="Usage:
     ${0##*/} save OPTIONS
 or  ${0##*/} restore OPTIONS
@@ -33,7 +33,7 @@ function files_ancestors() {
 
   while read -r -d '' FPATH; do
     while [[ "${FPATH}" && "${FPATH}" != [./] ]]; do
-      printf "%s\0" "${FPATH}"
+      printf '%s\0' "${FPATH}"
       FPATH=$(dirname "${FPATH}")
     done
   done
@@ -44,7 +44,7 @@ function filter_symlinks() {
 
   while read -r -d '' FILENAME; do
     if [[ ! -L "${FILENAME}" ]]; then
-      printf "%s\0" "${FILENAME}"
+      printf '%s\0' "${FILENAME}"
     fi
   done
 }
@@ -87,7 +87,7 @@ function process_args() {
   local -n CMD=$1
   local -n FNAME=$2
 
-  CMD=${3^^*}
+  CMD="${3^^*}"
   FNAME="${DFLT_MODEFILE}"
 
   shift 3
@@ -126,11 +126,11 @@ function main() {
   go_worktree_root
 
   case "${COMMAND}" in
-    "SAVE")
+    'SAVE')
       get_modes > "${MODEFILE}"
       ;;
 
-    "RESTORE")
+    'RESTORE')
       restore_modes < "${MODEFILE}"
       ;;
 
