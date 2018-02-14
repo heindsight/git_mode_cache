@@ -17,17 +17,12 @@ Options:
 "
 
 function go_worktree_root() {
-  local CDUP=$(git rev-parse --show-cdup)
-  local ERR=$?
-
-  if [[ ${ERR} -ne 0 ]]; then
-    exit ${ERR};
-  fi
+  local CDUP
+  CDUP=$(git rev-parse --show-cdup)
 
   if [[ "${CDUP}" ]]; then
-    pushd "${CDUP}" &> /dev/null \
-      && trap 'popd &> /dev/null' EXIT \
-      || exit $?
+    pushd "${CDUP}" &> /dev/null
+    trap 'popd &> /dev/null' EXIT
   fi
 }
 
