@@ -69,8 +69,8 @@ function get_modes() {
 function restore_modes() {
   local MODE
   local FILENAME
-  local ORIG_IFS="${IFS}"
 
+  trap IFS="${IFS}" RETURN
   printf -v IFS '\t'
 
   while read -r -d '' MODE FILENAME; do
@@ -78,8 +78,6 @@ function restore_modes() {
       chmod "${MODE}" "${FILENAME}"
     fi
   done
-
-  IFS="${ORIG_IFS}"
 }
 
 function process_args() {
