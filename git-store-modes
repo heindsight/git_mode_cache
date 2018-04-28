@@ -95,7 +95,7 @@ function process_args() {
   while getopts 'f:h' OPT; do
     case "${OPT}" in
       'f')
-        MODEFILE=${OPTARG}
+        FNAME=${OPTARG}
         ;;
       'h')
         echo "${USAGE}"
