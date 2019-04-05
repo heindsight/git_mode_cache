@@ -20,10 +20,7 @@ function go_worktree_root() {
   local CDUP
   CDUP=$(git rev-parse --show-cdup)
 
-  if [[ "${CDUP}" ]]; then
-    pushd "${CDUP}" &> /dev/null
-    trap 'popd &> /dev/null' EXIT
-  fi
+  cd "${CDUP}"
 }
 
 function files_ancestors() {
