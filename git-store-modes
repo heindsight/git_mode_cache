@@ -27,9 +27,11 @@ function files_ancestors() {
   local FPATH
 
   while read -r -d '' FPATH; do
-    while [[ "${FPATH}" && "${FPATH}" != [./] ]]; do
+    printf '%s\0' "${FPATH}"
+
+    while [[ "${FPATH}" && "${FPATH}" == */* ]]; do
+      FPATH="${FPATH%/*}"
       printf '%s\0' "${FPATH}"
-      FPATH=$(dirname "${FPATH}")
     done
   done
 }
