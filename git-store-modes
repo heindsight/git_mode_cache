@@ -93,7 +93,7 @@ function process_args() {
         FNAME=${OPTARG}
         ;;
       'h')
-        echo "${USAGE}"
+        echo "${USAGE}" >&2
         exit
         ;;
       *)
