@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
-set -o errexit
-set -o nounset
-set -o pipefail
+set -o errexit -o nounset -o pipefail
 
 DFLT_MODEFILE='.git-mode-cache'
 USAGE="Usage:
@@ -22,19 +20,18 @@ function go_worktree_root() {
   local CDUP
   CDUP=$(git rev-parse --show-cdup)
 
-  if [[ "${CDUP}" ]]; then
-    pushd "${CDUP}" &> /dev/null
-    trap 'popd &> /dev/null' EXIT
-  fi
+  cd "${CDUP}"
 }
 
 function files_ancestors() {
   local FPATH
 
   while read -r -d '' FPATH; do
-    while [[ "${FPATH}" && "${FPATH}" != [./] ]]; do
+    printf '%s\0' "${FPATH}"
+
+    while [[ "${FPATH}" && "${FPATH}" == */* ]]; do
+      FPATH="${FPATH%/*}"
       printf '%s\0' "${FPATH}"
-      FPATH=$(dirname "${FPATH}")
     done
   done
 }
@@ -96,7 +93,7 @@ function process_args() {
         FNAME=${OPTARG}
         ;;
       'h')
-        echo "${USAGE}"
+        echo "${USAGE}" >&2
         exit
         ;;
       *)
