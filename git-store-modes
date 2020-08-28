@@ -40,7 +40,7 @@ function filter_symlinks() {
   local FILENAME
 
   while read -r -d '' FILENAME; do
-    if [[ ! -L "${FILENAME}" ]]; then
+    if [[ -a "${FILENAME}" && ! -L "${FILENAME}" ]]; then
       printf '%s\0' "${FILENAME}"
     fi
   done
@@ -71,7 +71,7 @@ function restore_modes() {
   printf -v IFS '\t'
 
   while read -r -d '' MODE FILENAME; do
-    if [[ ! -L "${FILENAME}" ]]; then
+    if [[ -a "${FILENAME}" && ! -L "${FILENAME}" ]]; then
       chmod "${MODE}" "${FILENAME}"
     fi
   done
