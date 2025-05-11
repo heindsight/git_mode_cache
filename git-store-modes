@@ -123,6 +123,9 @@ function main() {
   case "${COMMAND}" in
     'SAVE')
       get_modes > "${MODEFILE}"
+      if [[ -f "${MODEFILE}" ]]; then
+        git add "$MODEFILE"
+      fi
       ;;
 
     'RESTORE')
